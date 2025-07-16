@@ -40,13 +40,14 @@ const formatDate = (date) => {
 }
 const addData = async (data) => {
     data.dob = formatDate(data.dob)
+
     isLoading.value = true;
     let res = null;
-    if(!isEditing){
+    
+    if (!isEditing.value) {
         res = await mgrStore.postMgrdata(data);
     }
-    else{
-        console.log("editing")
+    else {
         res = await mgrStore.updateMgr(editId.value, data)
     }
 
@@ -72,7 +73,7 @@ const addData = async (data) => {
         })
     }
     isLoading.value = false;
-    
+
 }
 
 function resetForm() {
@@ -87,7 +88,7 @@ function resetForm() {
 
 function submitForm() {
     addData(form.value)
-    
+
 }
 
 async function handleDelete(id) {
@@ -107,7 +108,7 @@ async function handleDelete(id) {
     }
 }
 
-async function handleEdit(mgr){
+async function handleEdit(mgr) {
     form.value = mgr
     isEditing.value = true
     editId.value = mgr.mgrId
