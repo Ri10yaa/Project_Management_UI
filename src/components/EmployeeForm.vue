@@ -1,18 +1,19 @@
 <script setup>
 import { ref, onMounted, watchEffect } from 'vue';
 import { useSnackbar } from 'vue3-snackbar';
-import { useManagerStore } from '@/stores/Manager';
+import { useEmployeeStore } from '@/stores/Employee';
 
 const snackBar = useSnackbar()
 const form = ref({})
 const isLoading = ref(false);
-const mgrStore = useManagerStore()
+const empStore = useEmployeeStore()
 
 const props = defineProps(['isEditing', 'editItm'])
 const isEditing = ref(props.isEditing)
 const editItm = ref(props.editItm)
 
 watchEffect(()=>{
+    resetForm
     isEditing.value = props.isEditing
     editItm.value = props.editItm
     form.value = editItm.value
@@ -28,21 +29,21 @@ const formatDate = (date) => {
 }
 const addData = async (data) => {
     data.dob = formatDate(data.dob)
-
+    console.log(data.dob)
     isLoading.value = true;
     let res = null;
 
     if (!isEditing.value) {
-        res = await mgrStore.postMgrdata(data);
+        res = await empStore.postEmpdata(data);
     }
     else {
-        res = await mgrStore.updateMgr(editItm.value.mgrId, data)
+        res = await empStore.updateEmp(editItm.value.empId, data)
     }
 
     if (res?.success) {
         snackBar.add({
             type: 'success',
-            text: 'Manager added or updated successfully!'
+            text: 'Employee added or updated successfully!'
         })
         resetForm();
     }
@@ -70,13 +71,14 @@ function resetForm() {
         dob: null,
         salary: null,
         email: '',
-        phno: null
+        phno: null,
+        des: '',
+        mgrId: null
     }
 }
 
 function submitForm() {
     addData(form.value)
-
 }
 
 
@@ -85,7 +87,7 @@ function submitForm() {
 <template>
     <div style="display: block;">
         <div class="form-container">
-            <h2>Add Manager</h2>
+            <h2>Add Employee</h2>
             <form v-on:submit.prevent="submitForm">
                 <div>
                     <label>
@@ -121,6 +123,20 @@ function submitForm() {
                         <input type="text" v-model="form.salary" inputmode="numeric" pattern="\d*.\d*" required />
                     </label>
                 </div>
+
+                <div>
+                    <label>
+                        Designation:
+                        <input type="text" v-model="form.des" required />
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Manager ID:
+                        <input type="number" v-model="form.mgrId" required />
+                    </label>
+                </div>
                 <button type="submit">
                     Submit
 
@@ -133,7 +149,6 @@ function submitForm() {
 </template>
 
 <style scoped>
-
 .form-container {
     width: fit-content;
     padding: 10px;

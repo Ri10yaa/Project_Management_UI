@@ -2,25 +2,27 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
 
-export const useManagerStore = defineStore('manager', () => {
-  const managers = ref([])
-  const mgrCols = [
-    {label: 'Manager Name', key: 'mgrName'},
+export const useEmployeeStore = defineStore('employee', () => {
+  const employees = ref([])
+  const empCols = [
+    {label: 'Employee Name', key: 'empName'},
     {label: 'Date of Birth', key: 'dob'},
     {label: 'Email', key: 'email'},
     {label: 'Phone', key: 'phno'},
     {label: 'Salary', key: 'salary'},
+    {label:'Designation', key: 'designation'},
+    {label:'Manager ID',key:'mgrId'}
 ]
 
 
-  const getAllManagers = async () =>{
+  const getAllEmployees = async () =>{
     try{
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/mgr/all`,{
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/emp/all`,{
             headers:{
                 'x-api-key': import.meta.env.VITE_API_KEY,
             }
         })
-        managers.value = res.data.data
+        employees.value = res.data.data
         return res.data
     }catch(error){
         if(axios.isAxiosError(error)){
@@ -29,20 +31,22 @@ export const useManagerStore = defineStore('manager', () => {
     }
   }
 
-  const postMgrdata = async (data: {
-    mgrName: string
+  const postEmpdata = async (data: {
+    empName: string
     dob: Date
     salary: number
     phno: number
     email: string
+    des: string
+    mgrId: number
   }) => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/mgr`, data, {
+      const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/emp`, data, {
         headers: {
           'x-api-key': import.meta.env.VITE_API_KEY,
         },
       })
-      await getAllManagers()
+      await getAllEmployees()
       return res.data
 
     } catch (error) {
@@ -60,21 +64,23 @@ export const useManagerStore = defineStore('manager', () => {
     }
   }
 
-  const updateMgr = async (id: number, data:{
-    mgrName: string
+  const updateEmp = async (id: number, data:{
+    empName: string
     dob: Date
     salary: number
     phno: number
     email: string
+    des: string
+    mgrId: number
   }) =>{
     try {
-      const res = await axios.put(`${import.meta.env.VITE_BASE_URL}/mgr/${id}`, data, {
+      const res = await axios.put(`${import.meta.env.VITE_BASE_URL}/emp/${id}`, data, {
         headers: {
           'x-api-key': import.meta.env.VITE_API_KEY,
         },
       })
-      console.log("Entered into store function")
-      await getAllManagers()
+      
+      await getAllEmployees()
       return res.data
     } catch (error) {
       let validationErrors = Object()
@@ -91,14 +97,14 @@ export const useManagerStore = defineStore('manager', () => {
     }
   }
 
-  const deleteMgr = async (id: number) =>{
+  const deleteEmp = async (id: number) =>{
     try{
-        const res = await axios.delete(`${import.meta.env.VITE_BASE_URL}/mgr/${id}`,{
+        const res = await axios.delete(`${import.meta.env.VITE_BASE_URL}/emp/${id}`,{
           headers:{
             'x-api-key': import.meta.env.VITE_API_KEY,
           }
         })
-        await getAllManagers()
+        await getAllEmployees()
         return res.data 
     }catch(error){
       if(axios.isAxiosError(error)){
@@ -108,7 +114,7 @@ export const useManagerStore = defineStore('manager', () => {
 
   }
 
-  return { managers, mgrCols, postMgrdata, getAllManagers, deleteMgr, updateMgr}
+  return { employees, empCols, postEmpdata, getAllEmployees, deleteEmp, updateEmp}
 
 
 })

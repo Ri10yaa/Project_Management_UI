@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
+  
   <RouterView />
 </template>
 
 <style scoped>
+
 header {
   line-height: 1.5;
   max-height: 100vh;
@@ -26,7 +27,7 @@ nav {
 }
 
 nav a.router-link-exact-active {
-  color: var(--color-text);
+  color: #222831;
 }
 
 nav a.router-link-exact-active:hover {
