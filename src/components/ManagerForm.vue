@@ -7,6 +7,7 @@ const snackBar = useSnackbar()
 const form = ref({})
 const isLoading = ref(false);
 const mgrStore = useManagerStore()
+const emit = defineEmits(['dataUpdated'])
 
 const props = defineProps(['isEditing', 'editItm'])
 const isEditing = ref(props.isEditing)
@@ -44,6 +45,7 @@ const addData = async (data) => {
             type: 'success',
             text: 'Manager added or updated successfully!'
         })
+        emit('dataUpdated')
         resetForm();
     }
     else if (res.status === 422) {
@@ -158,6 +160,7 @@ form {
 .form-container h2 {
     color: #222831;
     margin-top: -25px;
+    font-size: 24px;
 }
 
 form div {

@@ -47,6 +47,7 @@ async function submit() {
     background-color: #EEEEEE;
     box-shadow: #393E46 0px 5px 15px;
     font-size: large;
+    height: 370px;
 }
 
 form {

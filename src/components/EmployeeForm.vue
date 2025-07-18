@@ -11,12 +11,16 @@ const empStore = useEmployeeStore()
 const props = defineProps(['isEditing', 'editItm'])
 const isEditing = ref(props.isEditing)
 const editItm = ref(props.editItm)
+const emit = defineEmits(['dataUpdated'])
 
 watchEffect(()=>{
-    resetForm
+    resetForm()
     isEditing.value = props.isEditing
     editItm.value = props.editItm
     form.value = editItm.value
+    if (editItm.value) {
+        form.value = { ...editItm.value } 
+    }
 })
 
 
@@ -41,10 +45,12 @@ const addData = async (data) => {
     }
 
     if (res?.success) {
+        console
         snackBar.add({
             type: 'success',
             text: 'Employee added or updated successfully!'
         })
+        emit('dataUpdated')
         resetForm();
     }
     else if (res.status === 422) {
@@ -67,12 +73,12 @@ const addData = async (data) => {
 
 function resetForm() {
     form.value = {
-        mgrName: '',
+        empName: '',
         dob: null,
         salary: null,
         email: '',
         phno: null,
-        des: '',
+        designation: '',
         mgrId: null
     }
 }
@@ -80,7 +86,6 @@ function resetForm() {
 function submitForm() {
     addData(form.value)
 }
-
 
 </script>
 
@@ -92,7 +97,7 @@ function submitForm() {
                 <div>
                     <label>
                         Name:
-                        <input type="text" v-model="form.mgrName" minlength="3" maxlength="30" required />
+                        <input type="text" v-model="form.empName" minlength="3" maxlength="30" required />
                     </label>
                 </div>
 
@@ -127,7 +132,7 @@ function submitForm() {
                 <div>
                     <label>
                         Designation:
-                        <input type="text" v-model="form.des" required />
+                        <input type="text" v-model="form.designation" required />
                     </label>
                 </div>
 
@@ -173,10 +178,11 @@ form {
 .form-container h2 {
     color: #222831;
     margin-top: -25px;
+    font-size: 24px;
 }
 
 form div {
-    width: 400px;
+    width: 350px;
 }
 
 input {

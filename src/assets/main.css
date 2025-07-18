@@ -23,8 +23,8 @@ a{
 @media (min-width: 1024px) {
   body {
     display: flex;
-    place-items: center;
-     width: 100%;
+    place-items: left;
+    width: 100%;
   }
 
   #app {

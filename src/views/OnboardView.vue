@@ -39,6 +39,7 @@ function toRegister(){
   height: 400px;
   margin-left: 300px;
   align-items: left;
+  margin-top: 15%;
 }
 
 .links{

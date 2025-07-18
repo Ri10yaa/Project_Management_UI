@@ -2,10 +2,11 @@
 import EmployeeForm from '@/components/EmployeeForm.vue';
 import ListComp from '@/components/ListComp.vue'
 import ManagerForm from '@/components/ManagerForm.vue'
+import Topbar from '@/components/Topbar.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useEmployeeStore } from '@/stores/Employee';
 import { useManagerStore } from '@/stores/Manager'
-import { onMounted, onUpdated, ref } from 'vue'
+import { onMounted, watchEffect, ref } from 'vue'
 import { useRouter } from 'vue-router';
 import { useSnackbar } from 'vue3-snackbar';
 
@@ -23,48 +24,43 @@ const router = useRouter()
 
 auth.me()
 console.log(auth.user)
-async function logout() {
-    await auth.logout()
-    router.push({ name: 'login' })
+
+const fetchData = async () =>{
+    try {
+    if (show.value === 'mgr') {
+      const res = await mgrStore.getAllManagers()
+      if (res?.success) {
+        cols.value = mgrStore.mgrCols
+        data.value = mgrStore.managers
+      } else {
+        snackBar.add({
+          type: 'error',
+          text: `${res?.message}`
+        })
+      }
+    } else if (show.value === 'emp') {
+      const res = await empStore.getAllEmployees()
+      if (res?.success) {
+        cols.value = empStore.empCols
+        data.value = empStore.employees
+      } else {
+        snackBar.add({
+          type: 'error',
+          text: `${res?.message}`
+        })
+      }
+    }
+  } catch (error) {
+    snackBar.add({
+      type: 'error',
+      text: `${error.message}`
+    })
+  }
 }
 
-onUpdated(async () => {
-    try {
-        if (show.value === 'mgr') {
-            const res = await mgrStore.getAllManagers()
-            if (res?.success) {
-                cols.value = mgrStore.mgrCols
-                data.value = mgrStore.managers
-            }
-            else {
-                snackBar.add({
-                    type: 'error',
-                    text: `${res?.message}`
-                })
-            }
-        }
-        else if (show.value === 'emp') {
-            const res = await empStore.getAllEmployees()
-            if (res?.success) {
-                cols.value = empStore.empCols
-                data.value = empStore.employees
-            }
-            else {
-                snackBar.add({
-                    type: 'error',
-                    text: `${res?.message}`
-                })
-            }
-        }
-
-
-
-    } catch (error) {
-        snackBar.add({
-            type: 'error',
-            text: `${error.message}`
-        })
-    }
+watchEffect(async () => {
+   fetchData()
+ 
 })
 
 
@@ -84,6 +80,7 @@ onMounted(async () => {
 
 const toggleForm = (value) => {
     show.value = value
+    fetchData()
 }
 
 const handleEdit = (obj) => {
@@ -91,22 +88,15 @@ const handleEdit = (obj) => {
     editItm.value = obj
 }
 
-const handleDel = async (obj) => {
-    let msg = '';
-    let res = null;
-    if (obj.mgrId !== undefined) {
-        res = await mgrStore.deleteMgr(obj.mgrId);
-        msg = 'Manager deleted successfully'
-    }
-    else if (obj.empId !== undefined) {
-        res = await empStore.deleteEmp(obj.empId);
-        msg = 'Employee deleted successfully'
-    }
-    if (res?.success) {
+const handleMgrDel = async (obj) =>{
+    const res = await mgrStore.deleteMgr(obj.mgrId);
+    
+     if (res?.success) {
         snackBar.add({
             type: 'success',
-            text: msg
+            text: 'Employee deleted successfully!'
         })
+        fetchData()
     }
     else {
         snackBar.add({
@@ -114,30 +104,47 @@ const handleDel = async (obj) => {
             text: `${res?.message}`
         })
     }
+
 }
+
+const handleEmpDel = async (obj) =>{
+    const res = await empStore.deleteEmp(obj.empId);
+     if (res?.success) {
+        snackBar.add({
+            type: 'success',
+            text: 'Employee deleted successfully!'
+        })
+        fetchData()
+    }
+    else {
+        snackBar.add({
+            type: 'error',
+            text: `${res?.message}`
+        })
+    }
+
+}
+
+const handleUpdate = () =>{
+    isEditing.value = false
+    editItm.value = {}
+    fetchData();
+}
+
 </script>
 
 <template>
     <div v-if="auth.user">
-        <div class="topbar">
-            <form v-on:submit.prevent="logout">
-            <button type="submit">Logout</button>
-        </form>
-        </div>
+        <Topbar @changeTable="toggleForm"/>
         <div class="container">
-            <div class="navbar">
-                <div @click="toggleForm('mgr')">Manager</div>
-                <div @click="toggleForm('emp')">Employee</div>
-            </div>
             <div class="main">
                 <div class="form-container">
-                    <ManagerForm v-if="show === 'mgr'" :isEditing="isEditing" :editItm="editItm" />
-                    <EmployeeForm v-if="show === 'emp'" :isEditing="isEditing" :editItm="editItm" />
+                    <ManagerForm v-if="show === 'mgr'" :isEditing="isEditing" :editItm="editItm" @dataUpdated="handleUpdate"/>
+                    <EmployeeForm v-if="show === 'emp'" :isEditing="isEditing" :editItm="editItm" @dataUpdated="handleUpdate"/>
                 </div>
+                <div class="vl"></div>
                 <div class="table-container">
-                    <ListComp :cols="cols" :data="data" @editData="handleEdit" @delData="handleDel" />
-                    <!-- <Table_cmp v-if="show ==='mgr'" :columns="empStore.empCols" :data="empStore.emps"/>
-                <Table_cmp v-if="show === 'emp'" :columns="proCols" :data="pros" /> -->
+                    <ListComp :table="show" :cols="cols" :data="data" @editData="handleEdit" @delMgr="handleMgrDel"  @delEmp="handleEmpDel" />
                 </div>
             </div>
         </div>
@@ -152,33 +159,25 @@ const handleDel = async (obj) => {
         rgba(26, 26, 37, 0.25) 0px 30px 60px -12px,
         rgba(0, 0, 0, 0.3) 0px 18px 36px -18px;
     border-radius: 5px;
-    margin: 10px;
+    margin-left: -100px;
     padding-top: 5px;
     width: fit-content;
+    margin-top: 70px;
+    margin-bottom: 10px;
 }
 
-.topbar{
-    width: 100%;
-    padding-left: 900px;
-    margin:20px;
+
+
+.vl {
+  border-left: 2px solid #393e4647;
+  height: auto;
+  left: 50%;
+  margin-left: -3px;
+  top: 0;
+  margin-bottom: 50px;
 }
 
-.topbar button{
-    background-color: #00ADB5;
-  border-radius: 15px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
-  border: none;
-  font-weight: medium;
-  font-size: large;
-}
 
-.topbar button:hover{
-    color: #00ADB5;
-  background: none;
-}
 
 .navbar {
     display: flex;
@@ -203,7 +202,7 @@ const handleDel = async (obj) => {
 
 .main {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     padding: 5px;
     margin: 10px;
 }

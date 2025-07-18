@@ -1,6 +1,7 @@
 import './assets/main.css'
 
-import { SnackbarService, Vue3Snackbar } from "vue3-snackbar";
+import { SnackbarService, Vue3Snackbar,  } from "vue3-snackbar";
+
 import "vue3-snackbar/styles";
 
 
@@ -14,6 +15,7 @@ const app = createApp(App)
 
 app.component("vue3-snackbar", Vue3Snackbar);
 app.use(SnackbarService);
+
 app.use(createPinia())
 app.use(router)
 

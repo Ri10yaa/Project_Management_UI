@@ -37,7 +37,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     salary: number
     phno: number
     email: string
-    des: string
+    designation: string
     mgrId: number
   }) => {
     try {
