@@ -9,7 +9,7 @@ import { useManagerStore } from '@/stores/Manager'
 import { onMounted, watchEffect, ref } from 'vue'
 import { useRouter } from 'vue-router';
 import { useSnackbar } from 'vue3-snackbar';
-
+import 'vue3-snackbar/styles'
 
 const snackBar = useSnackbar()
 const show = ref('mgr')
@@ -29,7 +29,7 @@ const fetchData = async () =>{
     try {
     if (show.value === 'mgr') {
       const res = await mgrStore.getAllManagers()
-      if (res?.success) {
+      if (res.success) {
         cols.value = mgrStore.mgrCols
         data.value = mgrStore.managers
       } else {
@@ -40,7 +40,7 @@ const fetchData = async () =>{
       }
     } else if (show.value === 'emp') {
       const res = await empStore.getAllEmployees()
-      if (res?.success) {
+      if (res.success) {
         cols.value = empStore.empCols
         data.value = empStore.employees
       } else {
@@ -66,7 +66,7 @@ watchEffect(async () => {
 
 onMounted(async () => {
     const res = await mgrStore.getAllManagers()
-    if (res?.success) {
+    if (res.success) {
         cols.value = mgrStore.mgrCols
         data.value = mgrStore.managers
     }
@@ -90,11 +90,10 @@ const handleEdit = (obj) => {
 
 const handleMgrDel = async (obj) =>{
     const res = await mgrStore.deleteMgr(obj.mgrId);
-    
-     if (res?.success) {
+     if (res.success) {
         snackBar.add({
             type: 'success',
-            text: 'Employee deleted successfully!'
+            text: 'Manager deleted successfully!'
         })
         fetchData()
     }
@@ -109,7 +108,7 @@ const handleMgrDel = async (obj) =>{
 
 const handleEmpDel = async (obj) =>{
     const res = await empStore.deleteEmp(obj.empId);
-     if (res?.success) {
+     if (res.success) {
         snackBar.add({
             type: 'success',
             text: 'Employee deleted successfully!'
@@ -151,7 +150,7 @@ const handleUpdate = () =>{
     </div>
 </template>
 
-<style scoped>
+<style>
 .container {
     color: #273f4f;
     background-color: #EEEEEE;

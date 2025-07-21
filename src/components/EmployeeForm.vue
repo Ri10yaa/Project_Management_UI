@@ -1,74 +1,90 @@
 <script setup>
-import { ref, onMounted, watchEffect } from 'vue';
-import { useSnackbar } from 'vue3-snackbar';
-import { useEmployeeStore } from '@/stores/Employee';
+import { ref, onMounted, watchEffect } from 'vue'
+import { useSnackbar } from 'vue3-snackbar'
+import { useEmployeeStore } from '@/stores/Employee'
+import { useManagerStore } from '@/stores/Manager'
 
 const snackBar = useSnackbar()
 const form = ref({})
-const isLoading = ref(false);
+const isLoading = ref(false)
 const empStore = useEmployeeStore()
+const mgrStore = useManagerStore()
 
 const props = defineProps(['isEditing', 'editItm'])
 const isEditing = ref(props.isEditing)
 const editItm = ref(props.editItm)
 const emit = defineEmits(['dataUpdated'])
+const ids = ref([])
+const des = ['developer', 'analyst', 'architect']
 
-watchEffect(()=>{
+onMounted(async () => {
+    const res = await mgrStore.getAllMgrIds()
+    if (res.success) {
+        ids.value = res.data
+        console.log(ids.value)
+        snackBar.add({
+            type: 'success',
+            text: 'Fetched manager ids',
+        })
+    } else {
+        snackBar.add({
+            type: 'error',
+            text: `${res?.message}`,
+        })
+    }
+})
+
+watchEffect(() => {
     resetForm()
     isEditing.value = props.isEditing
     editItm.value = props.editItm
     form.value = editItm.value
     if (editItm.value) {
-        form.value = { ...editItm.value } 
+        form.value = { ...editItm.value }
     }
 })
 
-
 const formatDate = (date) => {
     const d = new Date(date)
-    const formatted = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')
-        }/${d.getFullYear()}`;
+    const formatted = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}/${d.getFullYear()}`
     return formatted
-
 }
 const addData = async (data) => {
     data.dob = formatDate(data.dob)
     console.log(data.dob)
-    isLoading.value = true;
-    let res = null;
+    isLoading.value = true
+    let res = null
 
     if (!isEditing.value) {
-        res = await empStore.postEmpdata(data);
-    }
-    else {
+        res = await empStore.postEmpdata(data)
+    } else {
         res = await empStore.updateEmp(editItm.value.empId, data)
+        console.log(res)
     }
 
-    if (res?.success) {
-        console
+    if (res.success) {
         snackBar.add({
             type: 'success',
-            text: 'Employee added or updated successfully!'
+            text: 'Employee added or updated successfully!',
         })
         emit('dataUpdated')
-        resetForm();
-    }
-    else if (res.status === 422) {
+        resetForm()
+    } else if (res.status === 422) {
         for (const [key, value] of Object.entries(res.data)) {
             snackBar.add({
                 type: 'error',
-                text: `${value}`
+                text: `${value}`,
             })
         }
-    }
-    else {
+    } else {
         snackBar.add({
             type: 'error',
-            text: `${res?.message}`
+            text: `${res?.message}`,
         })
     }
-    isLoading.value = false;
-
+    isLoading.value = false
 }
 
 function resetForm() {
@@ -79,18 +95,17 @@ function resetForm() {
         email: '',
         phno: null,
         designation: '',
-        mgrId: null
+        mgrId: null,
     }
 }
 
 function submitForm() {
     addData(form.value)
 }
-
 </script>
 
 <template>
-    <div style="display: block;">
+    <div style="display: block">
         <div class="form-container">
             <h2>Add Employee</h2>
             <form v-on:submit.prevent="submitForm">
@@ -132,25 +147,27 @@ function submitForm() {
                 <div>
                     <label>
                         Designation:
-                        <input type="text" v-model="form.designation" required />
+                        <!-- <input type="text" v-model="form.designation" required /> -->
+                        <select v-model="form.designation">
+                            <option v-for="role in des" :key="role" :value="role">{{ role }}</option>
+                        </select>
                     </label>
                 </div>
 
                 <div>
                     <label>
                         Manager ID:
-                        <input type="number" v-model="form.mgrId" required />
+                        <!-- <input type="number" v-model="form.mgrId" required /> -->
+                        <select v-model="form.mgrId">
+                            <option v-for="id in ids" :key="id" :value="id.mgrId">{{ id.mgrId }}</option>
+                        </select>
                     </label>
                 </div>
-                <button type="submit">
-                    Submit
-
-                </button>
+                <button type="submit">Submit</button>
             </form>
         </div>
     </div>
 
-    <vue3-snackbar top right :duration="5000" :limit="80" shadow></vue3-snackbar>
 </template>
 
 <style scoped>
@@ -161,7 +178,7 @@ function submitForm() {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    background-color: #EEEEEE;
+    background-color: #eeeeee;
     font-size: large;
 }
 
@@ -185,7 +202,8 @@ form div {
     width: 350px;
 }
 
-input {
+input,
+select {
     padding: 2px;
     width: 100%;
     margin-top: 5px;
@@ -193,9 +211,15 @@ input {
     height: 35px;
     border-radius: 5px;
     border: none;
+    background-color: white;
 }
-input:focus{
-    outline: 2px solid #00ADB5 ;
+
+input:focus {
+    outline: 2px solid #00adb5;
+}
+
+select:focus {
+    outline: 2px solid #00adb5;
 }
 
 button {
@@ -203,7 +227,7 @@ button {
     padding-bottom: 10px;
     padding-left: 20px;
     padding-right: 20px;
-    background-color: #00ADB5;
+    background-color: #00adb5;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -214,7 +238,6 @@ button {
 
 button:hover {
     background: none;
-    color: #00ADB5 ;
+    color: #00adb5;
 }
-
 </style>

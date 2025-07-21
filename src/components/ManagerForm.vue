@@ -39,8 +39,7 @@ const addData = async (data) => {
     else {
         res = await mgrStore.updateMgr(editItm.value.mgrId, data)
     }
-
-    if (res?.success) {
+    if (res.success) {
         snackBar.add({
             type: 'success',
             text: 'Manager added or updated successfully!'

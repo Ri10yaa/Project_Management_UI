@@ -3,13 +3,16 @@ import Mainview from '@/views/Mainview.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import LoginView from '@/views/LoginView.vue'
 import OnboardView from '@/views/OnboardView.vue'
+import { auth } from '@/middleware/auth'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/home",
       name: 'home',
-      component: Mainview
+      component: Mainview,
+      meta: { requiresAuth: true }
     },
     {
       path: '/',
@@ -18,14 +21,20 @@ const router = createRouter({
     {
       path: "/register",
       name: 'register',
-      component: RegisterView
+      component: RegisterView,
+      
     },
     {
       path: "/login",
       name: 'login',
-      component: LoginView
+      component: LoginView,
+      
     }
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  auth(to, from, next)
 })
 
 export default router

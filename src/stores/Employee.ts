@@ -13,13 +13,14 @@ export const useEmployeeStore = defineStore('employee', () => {
     {label:'Designation', key: 'designation'},
     {label:'Manager ID',key:'mgrId'}
 ]
-
+const token = ref(localStorage.getItem('token'))
 
   const getAllEmployees = async () =>{
     try{
         const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/emp/all`,{
             headers:{
                 'x-api-key': import.meta.env.VITE_API_KEY,
+                'Authorization': `Bearer ${token.value}`,
             }
         })
         employees.value = res.data.data
@@ -44,6 +45,7 @@ export const useEmployeeStore = defineStore('employee', () => {
       const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/emp`, data, {
         headers: {
           'x-api-key': import.meta.env.VITE_API_KEY,
+          'Authorization': `Bearer ${token.value}`,
         },
       })
       await getAllEmployees()
@@ -77,6 +79,7 @@ export const useEmployeeStore = defineStore('employee', () => {
       const res = await axios.put(`${import.meta.env.VITE_BASE_URL}/emp/${id}`, data, {
         headers: {
           'x-api-key': import.meta.env.VITE_API_KEY,
+          'Authorization': `Bearer ${token.value}`,
         },
       })
       
@@ -102,6 +105,7 @@ export const useEmployeeStore = defineStore('employee', () => {
         const res = await axios.delete(`${import.meta.env.VITE_BASE_URL}/emp/${id}`,{
           headers:{
             'x-api-key': import.meta.env.VITE_API_KEY,
+            'Authorization': `Bearer ${token.value}`,
           }
         })
         await getAllEmployees()
