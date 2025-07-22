@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, watchEffect } from 'vue';
-import { useSnackbar } from 'vue3-snackbar';
+import { useNotification } from '@kyvg/vue3-notification';
 import { useManagerStore } from '@/stores/Manager';
 
-const snackBar = useSnackbar()
+const { notify } = useNotification()
 const form = ref({})
 const isLoading = ref(false);
 const mgrStore = useManagerStore()
@@ -13,7 +13,7 @@ const props = defineProps(['isEditing', 'editItm'])
 const isEditing = ref(props.isEditing)
 const editItm = ref(props.editItm)
 
-watchEffect(()=>{
+watchEffect(() => {
     isEditing.value = props.isEditing
     editItm.value = props.editItm
     form.value = editItm.value
@@ -40,25 +40,25 @@ const addData = async (data) => {
         res = await mgrStore.updateMgr(editItm.value.mgrId, data)
     }
     if (res.success) {
-        snackBar.add({
-            type: 'success',
-            text: 'Manager added or updated successfully!'
+        notify({
+            text: 'Manager added or updated successfully!',
+            type: 'error'
         })
         emit('dataUpdated')
         resetForm();
     }
     else if (res.status === 422) {
         for (const [key, value] of Object.entries(res.data)) {
-            snackBar.add({
-                type: 'error',
-                text: `${value}`
+            notify({
+                text: `${value}`,
+                type: 'error'
             })
         }
     }
     else {
-        snackBar.add({
-            type: 'error',
-            text: `${res?.message}`
+        notify({
+            text: `${res.message}`,
+            type: 'error'
         })
     }
     isLoading.value = false;
@@ -129,12 +129,9 @@ function submitForm() {
             </form>
         </div>
     </div>
-
-    <vue3-snackbar top right :duration="5000" :limit="80" shadow></vue3-snackbar>
 </template>
 
 <style scoped>
-
 .form-container {
     width: fit-content;
     padding: 10px;
@@ -175,8 +172,9 @@ input {
     border-radius: 5px;
     border: none;
 }
-input:focus{
-    outline: 2px solid #00ADB5 ;
+
+input:focus {
+    outline: 2px solid #00ADB5;
 }
 
 button {
@@ -195,7 +193,6 @@ button {
 
 button:hover {
     background: none;
-    color: #00ADB5 ;
+    color: #00ADB5;
 }
-
 </style>

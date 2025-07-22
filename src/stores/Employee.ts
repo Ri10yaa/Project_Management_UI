@@ -41,6 +41,7 @@ const token = ref(localStorage.getItem('token'))
     designation: string
     mgrId: number
   }) => {
+    console.log("Entered")
     try {
       const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/emp`, data, {
         headers: {
@@ -48,6 +49,7 @@ const token = ref(localStorage.getItem('token'))
           'Authorization': `Bearer ${token.value}`,
         },
       })
+      
       await getAllEmployees()
       return res.data
 
@@ -55,7 +57,7 @@ const token = ref(localStorage.getItem('token'))
       let validationErrors = Object()
       if (axios.isAxiosError(error) && error.response?.status === 422) {
         const errors = error.response?.data
-        errors.forEach((element : {field: string, message: string}) => {
+        errors.message.forEach((element : {field: string, message: string}) => {
           validationErrors[element.field] = element.message
         })
 
@@ -82,7 +84,7 @@ const token = ref(localStorage.getItem('token'))
           'Authorization': `Bearer ${token.value}`,
         },
       })
-      
+
       await getAllEmployees()
       return res.data
     } catch (error) {

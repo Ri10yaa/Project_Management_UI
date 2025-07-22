@@ -28,11 +28,17 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(payload: {username: string, password: string}) {
     const res = await api('POST', '/login', payload)
-    authenticate(res)
+    if(!res.success){
+      return res
+    }
+    authenticate(res.data)
   }
 
   async function register(payload: {username: string, password: string}) {
     const res = await api('POST', '/register', payload)
+    if(!res.success){
+      return res
+    }
     authenticate(res)
   }
 

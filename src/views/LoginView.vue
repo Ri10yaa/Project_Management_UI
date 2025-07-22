@@ -2,7 +2,9 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useNotification } from '@kyvg/vue3-notification';
 
+const { notify } = useNotification()
 const router = useRouter()
 const auth = useAuthStore()
 const form = ref({
@@ -10,8 +12,17 @@ const form = ref({
     password: ''
 })
 async function submit() {
-    await auth.login(form.value)
-    router.push({name: 'home'})
+    const res = await auth.login(form.value)
+    if (res !== undefined && !res?.success) {
+        notify({
+            text: `${res.message}`,
+            type: 'error'
+        })
+    }
+    else {
+        router.push({ name: 'home' })
+    }
+
 }
 </script>
 
@@ -28,14 +39,13 @@ async function submit() {
                 <span>Password</span>
                 <input type="password" v-model="form.password" />
             </label>
-        <button type="submit">Login</button>
+            <button type="submit">Login</button>
         </form>
     </div>
 
 </template>
 
 <style scoped>
-
 .form-container {
     width: fit-content;
     padding: 40px;
@@ -77,8 +87,9 @@ input {
     border-radius: 5px;
     border: none;
 }
-input:focus{
-    outline: 2px solid #00ADB5 ;
+
+input:focus {
+    outline: 2px solid #00ADB5;
 }
 
 button {
@@ -97,7 +108,6 @@ button {
 
 button:hover {
     background: none;
-    color: #00ADB5 ;
+    color: #00ADB5;
 }
-
 </style>

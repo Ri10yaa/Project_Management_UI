@@ -1,14 +1,14 @@
 <script setup>
 import { ref, onMounted, watchEffect } from 'vue'
-import { useSnackbar } from 'vue3-snackbar'
 import { useEmployeeStore } from '@/stores/Employee'
 import { useManagerStore } from '@/stores/Manager'
+import { useNotification } from '@kyvg/vue3-notification'
 
-const snackBar = useSnackbar()
 const form = ref({})
 const isLoading = ref(false)
 const empStore = useEmployeeStore()
 const mgrStore = useManagerStore()
+const { notify } = useNotification()
 
 const props = defineProps(['isEditing', 'editItm'])
 const isEditing = ref(props.isEditing)
@@ -21,16 +21,12 @@ onMounted(async () => {
     const res = await mgrStore.getAllMgrIds()
     if (res.success) {
         ids.value = res.data
-        console.log(ids.value)
-        snackBar.add({
-            type: 'success',
-            text: 'Fetched manager ids',
-        })
     } else {
-        snackBar.add({
-            type: 'error',
+        notify({
             text: `${res?.message}`,
+            type: 'success'
         })
+
     }
 })
 
@@ -53,35 +49,27 @@ const formatDate = (date) => {
 }
 const addData = async (data) => {
     data.dob = formatDate(data.dob)
-    console.log(data.dob)
     isLoading.value = true
-    let res = null
-
-    if (!isEditing.value) {
-        res = await empStore.postEmpdata(data)
-    } else {
-        res = await empStore.updateEmp(editItm.value.empId, data)
-        console.log(res)
-    }
+    const res = isEditing.value ? await empStore.updateEmp(editItm.value.empId, data) : await empStore.postEmpdata(data);
 
     if (res.success) {
-        snackBar.add({
-            type: 'success',
+        notify({
             text: 'Employee added or updated successfully!',
+            type: 'success'
         })
         emit('dataUpdated')
         resetForm()
-    } else if (res.status === 422) {
+    } else if (!res.success && res.status === 422) {
         for (const [key, value] of Object.entries(res.data)) {
-            snackBar.add({
-                type: 'error',
+            notify({
                 text: `${value}`,
+                type: 'error'
             })
         }
     } else {
-        snackBar.add({
-            type: 'error',
-            text: `${res?.message}`,
+        notify({
+            text: `${res.message}`,
+            type: 'error'
         })
     }
     isLoading.value = false

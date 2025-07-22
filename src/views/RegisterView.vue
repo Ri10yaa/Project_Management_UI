@@ -2,7 +2,9 @@
 import { useAuthStore } from '@/stores/auth';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useNotification } from '@kyvg/vue3-notification';
 
+const { notify } = useNotification()
 const router = useRouter()
 const auth = useAuthStore()
 
@@ -11,8 +13,19 @@ const form = ref({
     password: ''
 })
 async function submit() {
-    await auth.register(form.value)
-    router.push({name: 'home'})
+    const res = await auth.register(form.value)
+    if (res !== undefined && !res?.success) {
+        res.message.forEach(element => {
+            notify({
+                text: element.message,
+                type: 'error'
+            })
+        });
+
+    }
+    else {
+        router.push({ name: 'home' })
+    }
 }
 </script>
 
@@ -27,9 +40,9 @@ async function submit() {
 
             <label>
                 <span>Password</span>
-                <input type="password" v-model="form.password" />
+                <input type="password" v-model="form.password" minlength="8" />
             </label>
-        <button type="submit">Register</button>
+            <button type="submit">Register</button>
         </form>
     </div>
 
@@ -77,8 +90,9 @@ input {
     border-radius: 5px;
     border: none;
 }
-input:focus{
-    outline: 2px solid #00ADB5 ;
+
+input:focus {
+    outline: 2px solid #00ADB5;
 }
 
 button {
@@ -97,7 +111,6 @@ button {
 
 button:hover {
     background: none;
-    color: #00ADB5 ;
+    color: #00ADB5;
 }
-
 </style>

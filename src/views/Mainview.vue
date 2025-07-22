@@ -8,10 +8,9 @@ import { useEmployeeStore } from '@/stores/Employee';
 import { useManagerStore } from '@/stores/Manager'
 import { onMounted, watchEffect, ref } from 'vue'
 import { useRouter } from 'vue-router';
-import { useSnackbar } from 'vue3-snackbar';
-import 'vue3-snackbar/styles'
+import { useNotification } from '@kyvg/vue3-notification';
 
-const snackBar = useSnackbar()
+const { notify } = useNotification()
 const show = ref('mgr')
 const cols = ref([])
 const data = ref([])
@@ -23,44 +22,43 @@ const auth = useAuthStore()
 const router = useRouter()
 
 auth.me()
-console.log(auth.user)
 
-const fetchData = async () =>{
+const fetchData = async () => {
     try {
-    if (show.value === 'mgr') {
-      const res = await mgrStore.getAllManagers()
-      if (res.success) {
-        cols.value = mgrStore.mgrCols
-        data.value = mgrStore.managers
-      } else {
-        snackBar.add({
-          type: 'error',
-          text: `${res?.message}`
+        if (show.value === 'mgr') {
+            const res = await mgrStore.getAllManagers()
+            if (res.success) {
+                cols.value = mgrStore.mgrCols
+                data.value = mgrStore.managers
+            } else {
+                notify({
+                    text: `${res.message}`,
+                    type: 'error'
+                })
+            }
+        } else if (show.value === 'emp') {
+            const res = await empStore.getAllEmployees()
+            if (res.success) {
+                cols.value = empStore.empCols
+                data.value = empStore.employees
+            } else {
+                notify({
+                    text: `${res.message}`,
+                    type: 'error'
+                })
+
+            }
+        }
+    } catch (error) {
+        notify({
+            text: `${error.message}`,
+            type: 'error'
         })
-      }
-    } else if (show.value === 'emp') {
-      const res = await empStore.getAllEmployees()
-      if (res.success) {
-        cols.value = empStore.empCols
-        data.value = empStore.employees
-      } else {
-        snackBar.add({
-          type: 'error',
-          text: `${res?.message}`
-        })
-      }
     }
-  } catch (error) {
-    snackBar.add({
-      type: 'error',
-      text: `${error.message}`
-    })
-  }
 }
 
 watchEffect(async () => {
-   fetchData()
- 
+    fetchData()
 })
 
 
@@ -71,9 +69,9 @@ onMounted(async () => {
         data.value = mgrStore.managers
     }
     else {
-        snackBar.add({
-            type: 'error',
-            text: `${res?.message}`
+        notify({
+            text: `${res.message}`,
+            type: 'error'
         })
     }
 })
@@ -88,43 +86,42 @@ const handleEdit = (obj) => {
     editItm.value = obj
 }
 
-const handleMgrDel = async (obj) =>{
+const handleMgrDel = async (obj) => {
     const res = await mgrStore.deleteMgr(obj.mgrId);
-     if (res.success) {
-        snackBar.add({
-            type: 'success',
-            text: 'Manager deleted successfully!'
+    if (res.success) {
+        notify({
+            text: 'Manager deleted successfully!',
+            type: 'success'
         })
         fetchData()
     }
     else {
-        snackBar.add({
-            type: 'error',
-            text: `${res?.message}`
+        notify({
+            text: `${res.message}`,
+            type: 'error'
         })
     }
 
 }
 
-const handleEmpDel = async (obj) =>{
+const handleEmpDel = async (obj) => {
     const res = await empStore.deleteEmp(obj.empId);
-     if (res.success) {
-        snackBar.add({
-            type: 'success',
-            text: 'Employee deleted successfully!'
+    if (res.success) {
+        notify({
+            text: 'Employee deleted successfully!',
+            type: 'success'
         })
         fetchData()
     }
     else {
-        snackBar.add({
-            type: 'error',
-            text: `${res?.message}`
+        notify({
+            text: `${res.message}`,
+            type: 'error'
         })
     }
-
 }
 
-const handleUpdate = () =>{
+const handleUpdate = () => {
     isEditing.value = false
     editItm.value = {}
     fetchData();
@@ -134,16 +131,19 @@ const handleUpdate = () =>{
 
 <template>
     <div v-if="auth.user">
-        <Topbar @changeTable="toggleForm"/>
+        <Topbar @changeTable="toggleForm" />
         <div class="container">
             <div class="main">
-                <div class="form-container">
-                    <ManagerForm v-if="show === 'mgr'" :isEditing="isEditing" :editItm="editItm" @dataUpdated="handleUpdate"/>
-                    <EmployeeForm v-if="show === 'emp'" :isEditing="isEditing" :editItm="editItm" @dataUpdated="handleUpdate"/>
+                <div>
+                    <ManagerForm v-if="show === 'mgr'" :isEditing="isEditing" :editItm="editItm"
+                        @dataUpdated="handleUpdate" />
+                    <EmployeeForm v-if="show === 'emp'" :isEditing="isEditing" :editItm="editItm"
+                        @dataUpdated="handleUpdate" />
                 </div>
                 <div class="vl"></div>
-                <div class="table-container">
-                    <ListComp :table="show" :cols="cols" :data="data" @editData="handleEdit" @delMgr="handleMgrDel"  @delEmp="handleEmpDel" />
+                <div>
+                    <ListComp :table="show" :cols="cols" :data="data" @editData="handleEdit" @delMgr="handleMgrDel"
+                        @delEmp="handleEmpDel" />
                 </div>
             </div>
         </div>
@@ -168,12 +168,12 @@ const handleUpdate = () =>{
 
 
 .vl {
-  border-left: 2px solid #393e4647;
-  height: auto;
-  left: 50%;
-  margin-left: -3px;
-  top: 0;
-  margin-bottom: 50px;
+    border-left: 2px solid #393e4647;
+    height: auto;
+    left: 50%;
+    margin-left: -3px;
+    top: 0;
+    margin-bottom: 50px;
 }
 
 
